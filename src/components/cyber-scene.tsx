@@ -1,444 +1,225 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, Text, MeshTransmissionMaterial, Environment, Sparkles } from "@react-three/drei";
-import { Suspense, useRef, useMemo, useState, useEffect } from "react";
-import type { Mesh, Group, Vector3 } from "three";
-import * as THREE from "three";
+import { useEffect, useState, useRef } from "react";
 
-// Interactive Data Node - represents data flowing through a network
-function DataNode({ 
-  position, 
-  label, 
-  value,
-  color = "#c9775a" 
-}: { 
-  position: [number, number, number]; 
+interface DataNode {
+  id: number;
   label: string;
   value: string;
-  color?: string;
-}) {
-  const groupRef = useRef<Group>(null);
-  const meshRef = useRef<Mesh>(null);
-  const [hovered, setHovered] = useState(false);
+  x: number;
+  y: number;
+  delay: number;
+}
 
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.5;
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
-    }
-    if (groupRef.current) {
-      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.8 + position[0]) * 0.15;
-    }
-  });
+const dataNodes: DataNode[] = [
+  { id: 1, label: "PROJECTS", value: "20+", x: 15, y: 20, delay: 0 },
+  { id: 2, label: "EXPERIENCE", value: "5 YRS", x: 75, y: 25, delay: 0.5 },
+  { id: 3, label: "TECH STACK", value: "15+", x: 20, y: 70, delay: 1 },
+  { id: 4, label: "COMMITS", value: "2K+", x: 80, y: 65, delay: 1.5 },
+];
 
+function FloatingCube({ className, size = 60, delay = 0 }: { className?: string; size?: number; delay?: number }) {
   return (
-    <group ref={groupRef} position={position}>
-      <Float speed={2} rotationIntensity={0.3} floatIntensity={0.5}>
-        <mesh 
-          ref={meshRef} 
-          onPointerOver={() => setHovered(true)}
-          onPointerOut={() => setHovered(false)}
-          scale={hovered ? 1.2 : 1}
-        >
-          <dodecahedronGeometry args={[0.4, 0]} />
-          <MeshTransmissionMaterial
-            color={color}
-            thickness={0.5}
-            roughness={0.1}
-            transmission={0.9}
-            ior={1.5}
-            chromaticAberration={0.02}
-            backside
-          />
-        </mesh>
-        {/* Data label */}
-        <Text
-          position={[0, 0.7, 0]}
-          fontSize={0.12}
-          color={hovered ? "#ffffff" : "#a0a0a0"}
-          anchorX="center"
-          anchorY="middle"
-          font="/fonts/GeistMono-Regular.ttf"
-        >
-          {label}
-        </Text>
-        <Text
-          position={[0, 0.5, 0]}
-          fontSize={0.18}
-          color={color}
-          anchorX="center"
-          anchorY="middle"
-          font="/fonts/Geist-Bold.ttf"
-        >
-          {value}
-        </Text>
-      </Float>
-      {/* Glow ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.6, 0.02, 16, 32]} />
-        <meshBasicMaterial color={color} transparent opacity={hovered ? 0.8 : 0.3} />
-      </mesh>
-    </group>
+    <div 
+      className={`absolute pointer-events-none ${className}`}
+      style={{ 
+        animationDelay: `${delay}s`,
+        perspective: "500px"
+      }}
+    >
+      <div 
+        className="animate-rotate-3d"
+        style={{
+          width: size,
+          height: size,
+          transformStyle: "preserve-3d",
+          position: "relative"
+        }}
+      >
+        <div className="absolute inset-0 border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)]" 
+          style={{ transform: `translateZ(${size/2}px)` }} />
+        <div className="absolute inset-0 border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)]" 
+          style={{ transform: `rotateY(180deg) translateZ(${size/2}px)` }} />
+        <div className="absolute inset-0 border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)]" 
+          style={{ transform: `rotateY(-90deg) translateZ(${size/2}px)` }} />
+        <div className="absolute inset-0 border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)]" 
+          style={{ transform: `rotateY(90deg) translateZ(${size/2}px)` }} />
+        <div className="absolute inset-0 border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)]" 
+          style={{ transform: `rotateX(90deg) translateZ(${size/2}px)` }} />
+        <div className="absolute inset-0 border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)]" 
+          style={{ transform: `rotateX(-90deg) translateZ(${size/2}px)` }} />
+      </div>
+    </div>
   );
 }
 
-// Neural Network Connections - visualizes data pathways
-function NeuralConnections() {
-  const linesRef = useRef<Group>(null);
+function DataNodeCard({ node }: { node: DataNode }) {
+  const [isHovered, setIsHovered] = useState(false);
   
-  const points = useMemo(() => {
-    const pts: THREE.Vector3[][] = [];
-    // Create curved connections between nodes
-    const nodes = [
-      [-3, 1.5, -2], [3, 0.5, -2], [0, -1, -3], [-2, -1.5, -1], [2.5, 1.8, -1]
-    ] as const;
-    
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const start = new THREE.Vector3(...nodes[i]);
-        const end = new THREE.Vector3(...nodes[j]);
-        const mid = new THREE.Vector3().lerpVectors(start, end, 0.5);
-        mid.z -= 0.5;
+  return (
+    <div 
+      className="absolute animate-float group cursor-pointer"
+      style={{ 
+        left: `${node.x}%`, 
+        top: `${node.y}%`,
+        animationDelay: `${node.delay}s`,
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative transition-transform duration-500" style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}>
+        <div 
+          className="absolute -inset-4 bg-[hsl(var(--primary)/0.2)] blur-xl rounded-lg transition-opacity duration-500"
+          style={{ opacity: isHovered ? 1 : 0 }}
+        />
         
-        const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-        pts.push(curve.getPoints(20));
-      }
-    }
-    return pts;
-  }, []);
-
-  useFrame((state) => {
-    if (linesRef.current) {
-      linesRef.current.children.forEach((child, i) => {
-        const material = (child as THREE.Line).material as THREE.LineBasicMaterial;
-        material.opacity = 0.2 + Math.sin(state.clock.elapsedTime * 2 + i * 0.5) * 0.15;
-      });
-    }
-  });
-
-  return (
-    <group ref={linesRef}>
-      {points.map((linePoints, i) => (
-        <line key={i}>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              count={linePoints.length}
-              array={new Float32Array(linePoints.flatMap(p => [p.x, p.y, p.z]))}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <lineBasicMaterial color="#5a8c6a" transparent opacity={0.3} />
-        </line>
-      ))}
-    </group>
+        <div className={`relative bg-[hsl(var(--card)/0.8)] backdrop-blur-sm border rounded-lg p-4 min-w-[120px]
+                        transition-all duration-500 ${isHovered ? 'border-[hsl(var(--primary)/0.6)] bg-[hsl(var(--card))]' : 'border-[hsl(var(--primary)/0.3)]'}`}>
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-[hsl(var(--secondary))] rounded-full animate-pulse-glow" />
+          
+          <p className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] tracking-wider">{node.label}</p>
+          <p className="text-2xl font-bold text-gradient mt-1">{node.value}</p>
+          
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[hsl(var(--primary)/0.5)] to-transparent" />
+        </div>
+        
+        <div className="absolute top-1/2 -left-8 w-8 h-[1px] bg-gradient-to-l from-[hsl(var(--primary)/0.5)] to-transparent" />
+      </div>
+    </div>
   );
 }
 
-// Holographic Terminal - displays code snippets
-function HolographicTerminal({ position }: { position: [number, number, number] }) {
-  const meshRef = useRef<Mesh>(null);
-  const [codeIndex, setCodeIndex] = useState(0);
-  
-  const codeSnippets = [
-    "const build = async () =>",
-    "deploy({ env: 'prod' })",
-    "await transform(data)",
-    "export default App",
+function HolographicTerminal() {
+  const [lineIndex, setLineIndex] = useState(0);
+  const lines = [
+    "$ initializing system...",
+    "$ loading portfolio data...",
+    "$ connecting to neural network...",
+    "$ rendering 3D environment...",
+    "$ status: OPERATIONAL",
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCodeIndex((i) => (i + 1) % codeSnippets.length);
+      setLineIndex((prev) => (prev + 1) % lines.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [codeSnippets.length]);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.1;
-    }
-  });
-
-  return (
-    <group position={position} ref={meshRef}>
-      {/* Terminal frame */}
-      <mesh>
-        <boxGeometry args={[2.5, 1.5, 0.05]} />
-        <meshStandardMaterial 
-          color="#1a1714" 
-          metalness={0.9} 
-          roughness={0.1}
-          transparent
-          opacity={0.8}
-        />
-      </mesh>
-      {/* Screen glow */}
-      <mesh position={[0, 0, 0.03]}>
-        <planeGeometry args={[2.3, 1.3]} />
-        <meshBasicMaterial color="#0a0908" />
-      </mesh>
-      {/* Code text */}
-      <Text
-        position={[-1, 0.3, 0.06]}
-        fontSize={0.1}
-        color="#5a8c6a"
-        anchorX="left"
-        font="/fonts/GeistMono-Regular.ttf"
-      >
-        {">"} {codeSnippets[codeIndex]}
-      </Text>
-      <Text
-        position={[-1, 0.1, 0.06]}
-        fontSize={0.08}
-        color="#c9775a"
-        anchorX="left"
-        font="/fonts/GeistMono-Regular.ttf"
-      >
-        // Building digital experiences
-      </Text>
-      <Text
-        position={[-1, -0.1, 0.06]}
-        fontSize={0.08}
-        color="#666"
-        anchorX="left"
-        font="/fonts/GeistMono-Regular.ttf"
-      >
-        status: ready
-      </Text>
-      {/* Scan line effect */}
-      <ScanLine />
-    </group>
-  );
-}
-
-function ScanLine() {
-  const meshRef = useRef<Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.6;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, 0.07]}>
-      <planeGeometry args={[2.3, 0.02]} />
-      <meshBasicMaterial color="#5a8c6a" transparent opacity={0.3} />
-    </mesh>
-  );
-}
-
-// Cyber Grid Floor with perspective
-function CyberGrid() {
-  const gridRef = useRef<Mesh>(null);
-
-  useFrame((state) => {
-    if (gridRef.current) {
-      const material = gridRef.current.material as THREE.ShaderMaterial;
-      if (material.uniforms) {
-        material.uniforms.uTime.value = state.clock.elapsedTime;
-      }
-    }
-  });
-
-  const gridShader = useMemo(() => ({
-    uniforms: {
-      uTime: { value: 0 },
-      uColor: { value: new THREE.Color("#c9775a") },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float uTime;
-      uniform vec3 uColor;
-      varying vec2 vUv;
-      
-      void main() {
-        vec2 grid = abs(fract(vUv * 20.0 - 0.5) - 0.5) / fwidth(vUv * 20.0);
-        float line = min(grid.x, grid.y);
-        float gridPattern = 1.0 - min(line, 1.0);
-        
-        float pulse = sin(vUv.y * 10.0 - uTime * 2.0) * 0.5 + 0.5;
-        float fade = smoothstep(0.0, 0.5, vUv.y) * (1.0 - smoothstep(0.5, 1.0, vUv.y));
-        
-        float alpha = gridPattern * 0.15 * fade * (0.5 + pulse * 0.5);
-        gl_FragColor = vec4(uColor, alpha);
-      }
-    `,
-    transparent: true,
-  }), []);
-
-  return (
-    <mesh ref={gridRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]}>
-      <planeGeometry args={[40, 40, 1, 1]} />
-      <shaderMaterial {...gridShader} />
-    </mesh>
-  );
-}
-
-// Floating Particles representing data
-function DataParticles() {
-  const particlesRef = useRef<THREE.Points>(null);
-  
-  const particles = useMemo(() => {
-    const count = 200;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    
-    const colorPrimary = new THREE.Color("#c9775a");
-    const colorSecondary = new THREE.Color("#5a8c6a");
-    const colorAccent = new THREE.Color("#d4c4a8");
-    
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10 - 5;
-      
-      const colorChoice = Math.random();
-      const color = colorChoice < 0.33 ? colorPrimary : colorChoice < 0.66 ? colorSecondary : colorAccent;
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-    }
-    
-    return { positions, colors, count };
   }, []);
 
-  useFrame((state) => {
-    if (particlesRef.current) {
-      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
-      for (let i = 0; i < particles.count; i++) {
-        positions[i * 3 + 1] += Math.sin(state.clock.elapsedTime + i) * 0.002;
-      }
-      particlesRef.current.geometry.attributes.position.needsUpdate = true;
-    }
-  });
-
   return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particles.count}
-          array={particles.positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={particles.count}
-          array={particles.colors}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial size={0.05} vertexColors transparent opacity={0.6} sizeAttenuation />
-    </points>
+    <div className="absolute bottom-10 left-10 max-w-xs z-10">
+      <div className="bg-[hsl(var(--card)/0.6)] backdrop-blur-md border border-[hsl(var(--primary)/0.2)] rounded-lg overflow-hidden">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--muted)/0.5)]">
+          <div className="w-2 h-2 rounded-full bg-red-500/80" />
+          <div className="w-2 h-2 rounded-full bg-yellow-500/80" />
+          <div className="w-2 h-2 rounded-full bg-green-500/80" />
+          <span className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] ml-2">system.terminal</span>
+        </div>
+        
+        <div className="p-3 font-mono text-xs space-y-1">
+          {lines.slice(0, lineIndex + 1).map((line, i) => (
+            <div key={i} className={i === lineIndex ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'}>
+              {line}
+              {i === lineIndex && <span className="animate-terminal-blink ml-1">_</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
-// Core Orb - central element
-function CoreOrb() {
-  const meshRef = useRef<Mesh>(null);
-  const ringRef = useRef<Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.2;
-      meshRef.current.rotation.z = state.clock.elapsedTime * 0.1;
-    }
-    if (ringRef.current) {
-      ringRef.current.rotation.z = -state.clock.elapsedTime * 0.5;
-    }
-  });
-
+function CentralOrb() {
   return (
-    <group position={[0, 0, -4]}>
-      <mesh ref={meshRef}>
-        <icosahedronGeometry args={[1.5, 1]} />
-        <MeshTransmissionMaterial
-          color="#c9775a"
-          thickness={1}
-          roughness={0}
-          transmission={0.95}
-          ior={1.5}
-          chromaticAberration={0.03}
-          backside
-        />
-      </mesh>
-      <mesh ref={ringRef}>
-        <torusGeometry args={[2.2, 0.03, 16, 64]} />
-        <meshBasicMaterial color="#5a8c6a" transparent opacity={0.6} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[2.5, 0.02, 16, 64]} />
-        <meshBasicMaterial color="#d4c4a8" transparent opacity={0.4} />
-      </mesh>
-      <Sparkles count={50} scale={5} size={2} speed={0.5} color="#c9775a" />
-    </group>
-  );
-}
-
-// Mouse follower for interactivity
-function MouseFollower() {
-  const meshRef = useRef<Mesh>(null);
-  const { viewport } = useThree();
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const x = (state.pointer.x * viewport.width) / 2;
-      const y = (state.pointer.y * viewport.height) / 2;
-      meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, x * 0.5, 0.1);
-      meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, y * 0.5, 0.1);
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, 2]}>
-      <sphereGeometry args={[0.1, 16, 16]} />
-      <meshBasicMaterial color="#c9775a" transparent opacity={0.5} />
-    </mesh>
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+      <div className="relative w-40 h-40">
+        {/* Outer glow */}
+        <div className="absolute inset-0 rounded-full bg-[hsl(var(--primary)/0.1)] blur-3xl animate-pulse-glow" />
+        
+        {/* Main orb */}
+        <div className="absolute inset-4 rounded-full bg-gradient-to-br from-[hsl(var(--primary)/0.3)] to-[hsl(var(--secondary)/0.2)] 
+                        border border-[hsl(var(--primary)/0.4)] animate-pulse-glow backdrop-blur-sm">
+          <div className="absolute inset-3 rounded-full bg-gradient-to-br from-[hsl(var(--primary)/0.4)] to-transparent" />
+        </div>
+        
+        {/* Orbiting ring 1 */}
+        <div className="absolute inset-0 animate-orbit">
+          <div className="w-3 h-3 rounded-full bg-[hsl(var(--primary)/0.8)]" />
+        </div>
+        
+        {/* Orbiting ring 2 */}
+        <div className="absolute inset-0 animate-orbit-reverse">
+          <div className="w-2 h-2 rounded-full bg-[hsl(var(--secondary)/0.8)]" />
+        </div>
+      </div>
+    </div>
   );
 }
 
 export default function CyberScene() {
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setMousePos({
+          x: ((e.clientX - rect.left) / rect.width) * 100,
+          y: ((e.clientY - rect.top) / rect.height) * 100,
+        });
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
-    <div className="absolute inset-0 -z-10">
-      <Canvas camera={{ position: [0, 0, 8], fov: 50 }} dpr={[1, 2]}>
-        <Suspense fallback={null}>
-          <Environment preset="night" />
-          <ambientLight intensity={0.2} />
-          <pointLight position={[10, 10, 10]} intensity={0.8} color="#c9775a" />
-          <pointLight position={[-10, -5, -10]} intensity={0.4} color="#5a8c6a" />
-          <spotLight position={[0, 15, 5]} intensity={0.5} color="#d4c4a8" angle={0.4} penumbra={1} />
-          
-          {/* Data visualization nodes */}
-          <DataNode position={[-3, 1.5, -2]} label="PROJECTS" value="20+" color="#c9775a" />
-          <DataNode position={[3, 0.5, -2]} label="EXPERIENCE" value="5 YRS" color="#5a8c6a" />
-          <DataNode position={[0, -1, -3]} label="TECH STACK" value="15+" color="#d4c4a8" />
-          
-          {/* Neural connections */}
-          <NeuralConnections />
-          
-          {/* Holographic terminal */}
-          <HolographicTerminal position={[-4, -0.5, 0]} />
-          
-          {/* Core visualization */}
-          <CoreOrb />
-          
-          {/* Environment */}
-          <CyberGrid />
-          <DataParticles />
-          
-          {/* Interactive cursor */}
-          <MouseFollower />
-        </Suspense>
-      </Canvas>
+    <div 
+      ref={containerRef}
+      className="absolute inset-0 overflow-hidden cyber-grid-bg"
+    >
+      {/* Radial gradient following mouse */}
+      <div 
+        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none transition-all duration-1000 ease-out"
+        style={{
+          left: `${mousePos.x}%`,
+          top: `${mousePos.y}%`,
+          transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, hsl(var(--primary) / 0.08) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Data nodes */}
+      {dataNodes.map((node) => (
+        <DataNodeCard key={node.id} node={node} />
+      ))}
+
+      {/* Floating 3D cubes */}
+      <FloatingCube className="top-[30%] left-[40%]" size={40} delay={0} />
+      <FloatingCube className="top-[60%] right-[30%]" size={30} delay={2} />
+      <FloatingCube className="bottom-[20%] left-[60%]" size={50} delay={4} />
+
+      {/* Central orb */}
+      <CentralOrb />
+
+      {/* Holographic terminal */}
+      <HolographicTerminal />
+
+      {/* Scan line effect */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+        <div 
+          className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-[hsl(var(--primary)/0.5)] to-transparent"
+          style={{ animation: "data-stream 4s linear infinite" }}
+        />
+      </div>
+
+      {/* Corner decorations */}
+      <div className="absolute top-4 left-4 w-16 h-16 border-l-2 border-t-2 border-[hsl(var(--primary)/0.3)]" />
+      <div className="absolute top-4 right-4 w-16 h-16 border-r-2 border-t-2 border-[hsl(var(--primary)/0.3)]" />
+      <div className="absolute bottom-4 left-4 w-16 h-16 border-l-2 border-b-2 border-[hsl(var(--primary)/0.3)]" />
+      <div className="absolute bottom-4 right-4 w-16 h-16 border-r-2 border-b-2 border-[hsl(var(--primary)/0.3)]" />
     </div>
   );
 }
