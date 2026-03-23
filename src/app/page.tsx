@@ -5,6 +5,7 @@ import AboutSection from "@/components/about-section";
 import SkillsSection from "@/components/skills-section";
 import ContactSection from "@/components/contact-section";
 import CyberFooter from "@/components/cyber-footer";
+import SecretPuppy from "@/components/secret-puppy";
 
 export default function Home() {
   return (
@@ -16,6 +17,8 @@ export default function Home() {
       <SkillsSection />
       <ContactSection />
       <CyberFooter />
+      {/* Secret Easter Egg: A tiny puppy appears after 30 seconds of cursor inactivity */}
+      <SecretPuppy />
     </main>
   );
 }

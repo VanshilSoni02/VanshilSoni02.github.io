@@ -19,19 +19,19 @@
   --popover-foreground: 35 20% 90%;
 
   /* Primary - Warm terracotta/copper accent */
-  --primary: 25 70% 55%;
+  --primary: 18 70% 55%;
   --primary-foreground: 30 8% 8%;
 
   /* Secondary - Sage green cyber accent */
-  --secondary: 140 25% 35%;
+  --secondary: 145 30% 40%;
   --secondary-foreground: 35 20% 90%;
 
   /* Muted - Warm charcoal */
-  --muted: 30 8% 18%;
-  --muted-foreground: 35 12% 55%;
+  --muted: 30 8% 16%;
+  --muted-foreground: 35 12% 50%;
 
   /* Accent - Sand/cream highlight */
-  --accent: 40 35% 75%;
+  --accent: 40 35% 70%;
   --accent-foreground: 30 8% 8%;
 
   /* Destructive */
@@ -39,17 +39,21 @@
   --destructive-foreground: 0 0% 98%;
 
   /* Border and input */
-  --border: 30 10% 20%;
-  --input: 30 10% 20%;
-  --ring: 25 70% 55%;
+  --border: 30 10% 18%;
+  --input: 30 10% 18%;
+  --ring: 18 70% 55%;
 
   /* Radius */
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
   /* Cyber grid color */
-  --cyber-grid: 25 70% 55%;
-  --cyber-glow: 140 25% 45%;
+  --cyber-grid: 18 70% 55%;
+  --cyber-glow: 145 30% 45%;
 }
+
+/* ============================
+   ANIMATIONS
+   ============================ */
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -57,8 +61,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 10px hsl(var(--primary) / 0.2); }
+  50% { opacity: 0.8; box-shadow: 0 0 25px hsl(var(--primary) / 0.4); }
 }
 
 @keyframes scan-line {
@@ -67,8 +71,27 @@
 }
 
 @keyframes grid-pulse {
-  0%, 100% { opacity: 0.1; }
-  50% { opacity: 0.3; }
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.15; }
+}
+
+@keyframes data-flow {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+@keyframes terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
 }
 
 .animate-float {
@@ -83,13 +106,52 @@
   animation: pulse-glow 3s ease-in-out infinite;
 }
 
+.animate-terminal-blink {
+  animation: terminal-blink 1s step-end infinite;
+}
+
+.animate-data-flow {
+  animation: data-flow 3s linear infinite;
+  background-size: 200% 100%;
+}
+
+/* ============================
+   CYBER GRID BACKGROUND
+   ============================ */
+
 .cyber-grid-bg {
   background-image: 
-    linear-gradient(to right, hsl(var(--cyber-grid) / 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--cyber-grid) / 0.1) 1px, transparent 1px);
-  background-size: 60px 60px;
+    linear-gradient(to right, hsl(var(--cyber-grid) / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--cyber-grid) / 0.08) 1px, transparent 1px);
+  background-size: 50px 50px;
   animation: grid-pulse 4s ease-in-out infinite;
 }
+
+/* Perspective grid effect */
+.cyber-grid-perspective {
+  background: 
+    linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 49px,
+      hsl(var(--cyber-grid) / 0.1) 49px,
+      hsl(var(--cyber-grid) / 0.1) 50px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 49px,
+      hsl(var(--cyber-grid) / 0.1) 49px,
+      hsl(var(--cyber-grid) / 0.1) 50px
+    );
+  transform: perspective(500px) rotateX(60deg);
+  transform-origin: center top;
+}
+
+/* ============================
+   TEXT EFFECTS
+   ============================ */
 
 .text-gradient {
   background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
@@ -98,26 +160,62 @@
   background-clip: text;
 }
 
-.glow-border {
-  box-shadow: 0 0 20px hsl(var(--primary) / 0.3), inset 0 0 20px hsl(var(--primary) / 0.1);
+.text-gradient-animated {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)),
+    hsl(var(--secondary)),
+    hsl(var(--accent)),
+    hsl(var(--primary))
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: data-flow 4s linear infinite;
 }
+
+/* ============================
+   GLOW EFFECTS
+   ============================ */
+
+.glow-border {
+  box-shadow: 
+    0 0 20px hsl(var(--primary) / 0.3), 
+    inset 0 0 20px hsl(var(--primary) / 0.05);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+}
+
+.glow-primary {
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.4);
+}
+
+.glow-secondary {
+  box-shadow: 0 0 30px hsl(var(--secondary) / 0.4);
+}
+
+/* ============================
+   CARD HOVER EFFECTS
+   ============================ */
 
 .card-hover {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hover:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px hsl(var(--primary) / 0.2);
+  transform: translateY(-4px);
+  box-shadow: 
+    0 20px 40px hsl(var(--primary) / 0.15),
+    0 0 0 1px hsl(var(--primary) / 0.1);
 }
 
-body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  overflow-x: hidden;
-}
+/* ============================
+   CUSTOM SCROLLBAR
+   ============================ */
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -127,16 +225,82 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.4);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.6);
 }
 
-/* Selection */
+/* ============================
+   SELECTION
+   ============================ */
+
 ::selection {
-  background: hsl(var(--primary) / 0.4);
+  background: hsl(var(--primary) / 0.3);
   color: hsl(var(--foreground));
+}
+
+/* ============================
+   BASE STYLES
+   ============================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  overflow-x: hidden;
+  font-feature-settings: "ss01", "ss02", "cv01";
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for interactive elements */
+a, button {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================
+   NOISE TEXTURE OVERLAY
+   ============================ */
+
+.noise-overlay::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ============================
+   LINE CLAMP UTILITIES
+   ============================ */
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
