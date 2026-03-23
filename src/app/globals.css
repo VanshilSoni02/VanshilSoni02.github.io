@@ -2,52 +2,141 @@
 
 @plugin "tailwindcss-animate";
 
+@theme inline {
+  --font-sans: 'Space Grotesk', 'Space Grotesk Fallback', sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', monospace;
+}
+
 :root {
-  --background: 0 0% 6.5%;
-  --foreground: 0 0% 95%;
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 93%;
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 93%;
+  /* Cyber Earth Tones - Dark sophisticated palette */
+  --background: 30 8% 8%;
+  --foreground: 35 20% 90%;
+  
+  --card: 30 8% 12%;
+  --card-foreground: 35 20% 90%;
+  
+  --popover: 30 8% 12%;
+  --popover-foreground: 35 20% 90%;
 
-  /* Primary colors - Blue theme */
-  --primary: 214 88% 60%;
-  --primary-foreground: 0 0% 98%;
+  /* Primary - Warm terracotta/copper accent */
+  --primary: 25 70% 55%;
+  --primary-foreground: 30 8% 8%;
 
-  /* Secondary colors */
-  --secondary: 0 0% 18%;
-  --secondary-foreground: 0 0% 90%;
+  /* Secondary - Sage green cyber accent */
+  --secondary: 140 25% 35%;
+  --secondary-foreground: 35 20% 90%;
 
-  /* Muted colors */
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 65%;
+  /* Muted - Warm charcoal */
+  --muted: 30 8% 18%;
+  --muted-foreground: 35 12% 55%;
 
-  /* Accent colors */
-  --accent: 0 0% 18%;
-  --accent-foreground: 0 0% 90%;
+  /* Accent - Sand/cream highlight */
+  --accent: 40 35% 75%;
+  --accent-foreground: 30 8% 8%;
 
   /* Destructive */
-  --destructive: 0 84% 60%;
+  --destructive: 0 65% 50%;
   --destructive-foreground: 0 0% 98%;
 
   /* Border and input */
-  --border: 0 0% 25%;
-  --input: 0 0% 25%;
-  --ring: 214 88% 60%;
+  --border: 30 10% 20%;
+  --input: 30 10% 20%;
+  --ring: 25 70% 55%;
 
   /* Radius */
-  --radius: 0.625rem;
+  --radius: 0.5rem;
 
-  /* Charts */
-  --chart-1: 41 70% 70%;
-  --chart-2: 185 65% 65%;
-  --chart-3: 227 45% 45%;
-  --chart-4: 84 80% 80%;
-  --chart-5: 70 75% 75%;
+  /* Cyber grid color */
+  --cyber-grid: 25 70% 55%;
+  --cyber-glow: 140 25% 45%;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes grid-pulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite 2s;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.cyber-grid-bg {
+  background-image: 
+    linear-gradient(to right, hsl(var(--cyber-grid) / 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--cyber-grid) / 0.1) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: grid-pulse 4s ease-in-out infinite;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-border {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.3), inset 0 0 20px hsl(var(--primary) / 0.1);
+}
+
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px hsl(var(--primary) / 0.2);
 }
 
 body {
-  font-family: "Poppins", Arial, Helvetica, sans-serif;
   background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+/* Selection */
+::selection {
+  background: hsl(var(--primary) / 0.4);
   color: hsl(var(--foreground));
 }
