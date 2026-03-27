@@ -48,9 +48,9 @@ function TerminalWindow() {
       {/* Terminal header */}
       <div className="flex items-center gap-2 px-4 py-3 bg-[hsl(var(--muted)/0.5)] border-b border-[hsl(var(--border))]">
         <div className="flex gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-500/60" />
-          <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-          <div className="w-3 h-3 rounded-full bg-green-500/60" />
+          <div className="w-3 h-3 rounded-full bg-red-500/80" />
+          <div className="w-3 h-3 rounded-full bg-[hsl(var(--primary)/0.8)]" />
+          <div className="w-3 h-3 rounded-full bg-[hsl(var(--secondary))]" />
         </div>
         <span className="text-xs font-mono text-[hsl(var(--muted-foreground))] ml-2">about.terminal</span>
       </div>
@@ -63,7 +63,7 @@ function TerminalWindow() {
             className={`transition-all duration-300 ${
               line.type === "command" ? "text-[hsl(var(--foreground))]" :
               line.type === "output" ? "text-[hsl(var(--muted-foreground))] pl-4" :
-              line.type === "highlight" ? "text-[hsl(var(--primary))]" :
+              line.type === "highlight" ? "text-[hsl(var(--secondary))] glow-text-green" :
               "text-[hsl(var(--muted-foreground))]"
             }`}
           >
