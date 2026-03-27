@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Kartik Patel",
+  title: "Vanshil Soni | Creative Developer",
   description:
-    "Software Developer | CS student @ UofR | GitHub Campus Expert | Core @ URGDG",
-  metadataBase: new URL("https://kpatel0170.github.io"),
+    "Creative developer crafting immersive digital experiences with cutting-edge technology and 3D graphics.",
+  metadataBase: new URL("https://vanshilsoni.dev"),
   openGraph: {
-    title: "Kartik Patel — Software Developer",
+    title: "Vanshil Soni — Creative Developer",
     description:
-      "Portfolio and timeline of Kartik Patel — software developer, hackathon organizer, and GitHub Campus Expert.",
-    url: "https://kpatel0170.github.io",
-    siteName: "Kartik Patel",
+      "Portfolio showcasing immersive web experiences, 3D graphics, and modern web development.",
+    url: "https://vanshilsoni.dev",
+    siteName: "Vanshil Soni",
     images: [
       {
-        url: "/profile-new.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Kartik Patel"
+        alt: "Vanshil Soni - Creative Developer"
       }
     ],
     locale: "en_US",
@@ -24,10 +24,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kartik Patel",
+    title: "Vanshil Soni | Creative Developer",
     description:
-      "Portfolio and timeline of Kartik Patel — software developer, hackathon organizer, and GitHub Campus Expert.",
-    images: ["/profile-new.png"]
+      "Creative developer crafting immersive digital experiences with cutting-edge technology.",
+    images: ["/og-image.png"]
   },
   robots: {
     index: true,
